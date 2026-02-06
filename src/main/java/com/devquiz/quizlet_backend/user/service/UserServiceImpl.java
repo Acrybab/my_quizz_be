@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,8 +36,10 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Email already exists");
         }
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-         String verificationToken = jwtService.generateJwtToken(request.getEmail());
-        User user = User.builder().userName(request.getUserName())
+//        String verificationToken = jwtService.generateJwtToken(request.getEmail());
+        String OTP = String.valueOf(new Random().nextInt(899999) + 100000);
+       redisTemplate.opsForValue().set("otp:" + request.getEmail(), String.valueOf(OTP), 5, TimeUnit.MINUTES);
+       User user = User.builder().userName(request.getFirstName() + " " + request.getLastName())
                 .email(request.getEmail())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -44,20 +47,42 @@ public class UserServiceImpl implements UserService {
                 .password(encodedPassword).role(Role.RoleType.USER)
                 .build();
     User savedUser = userRepository.save(user);
-        emailService.sendVerificationEmail(savedUser.getEmail() , verificationToken );
+        emailService.sendVerificationEmail(savedUser.getEmail() , OTP );
         return mapToUserResponse(savedUser);
     }
+//    @Override
+//    public void verifyUser(String token) {
+//        try {
+//            String userEmail = jwtService.extractEmail(token);
+//            User user = userRepository.findByEmail(userEmail)
+//                    .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+//            user.setIsEnabled(true);
+//            userRepository.save(user);
+//        } catch (Exception e) {
+//            throw new RuntimeException("Invalid verification token");
+//        }
+//    }
     @Override
-    public void verifyUser(String token) {
-        try {
-            String userEmail = jwtService.extractEmail(token);
-            User user = userRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
-            user.setIsEnabled(true);
-            userRepository.save(user);
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid verification token");
+    public String verifyOTP(String email, String otpEntered) {
+        String storedOtp = (String) redisTemplate.opsForValue().get("otp:" + email);
+        System.out.println(storedOtp + "storedOtp" +otpEntered);
+        if (storedOtp == null) {
+            throw new RuntimeException("Mã OTP đã hết hạn hoặc không tồn tại");
         }
+
+        if (!storedOtp.equals(otpEntered)) {
+            throw new RuntimeException("Mã OTP không chính xác");
+        }
+
+        // Nếu khớp: Active user và xóa OTP trong Redis
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        user.setIsEnabled(true);
+        userRepository.save(user);
+
+        redisTemplate.delete("otp:" + email);
+
+        return "Xác thực thành công!";
     }
     @Override
     public String signIn(UserSignInRequest request) {

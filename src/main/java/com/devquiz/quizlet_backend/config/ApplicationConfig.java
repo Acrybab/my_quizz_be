@@ -21,10 +21,11 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> (org.springframework.security.core.userdetails.UserDetails) userRepository.findByUserName(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+        // Đổi findByUserName thành findByEmail
+        return userName -> (org.springframework.security.core.userdetails.UserDetails) userRepository.findByEmail(userName)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userName));
     }
-
+//
 //    @Bean
 //    public AuthenticationProvider authenticationProvider() {
 //        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider( );

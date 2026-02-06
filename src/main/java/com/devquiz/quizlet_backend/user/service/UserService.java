@@ -11,8 +11,9 @@ import java.util.List;
 public interface UserService {
  UserResponse register(UserRegisterRequest request);
  List<UserResponse> getAllUsers();
-    void verifyUser(String token);
+//    void verifyUser(String token);
     String signIn(UserSignInRequest request);
+    String verifyOTP(String email, String otp);
 //void logOut(String token);
  User processOAuthPostLogin(String email, String name);
 

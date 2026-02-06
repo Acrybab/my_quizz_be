@@ -2,6 +2,7 @@ package com.devquiz.quizlet_backend.user.controllers;
 
 import com.devquiz.quizlet_backend.user.dto.request.UserRegisterRequest;
 import com.devquiz.quizlet_backend.user.dto.request.UserSignInRequest;
+import com.devquiz.quizlet_backend.user.dto.request.VerifyRequest;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
 import com.devquiz.quizlet_backend.user.dto.response.UserResponse;
 import com.devquiz.quizlet_backend.user.entity.User;
@@ -37,14 +38,31 @@ public class UserController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<ApiResponse<String>> signIn(@RequestBody UserSignInRequest userRequest, HttpServletResponse response) {
-        String token = userService.signIn(userRequest);
-        addTokenToCookie(response, token); // Sử dụng hàm dùng chung
+      try {
+          String token = userService.signIn(userRequest);
+          addTokenToCookie(response, token); // Sử dụng hàm dùng chung
 
-        return ResponseEntity.ok(ApiResponse.<String>builder()
-                .code(1000)
-                .message("Sign-in successfully")
-                .data(token) // Vẫn trả về token nếu FE cần dùng cho mục đích khác
-                .build());
+          return ResponseEntity.ok(ApiResponse.<String>builder()
+                  .code(1000)
+                  .message("Sign-in successfully")
+                  .data(token) // Vẫn trả về token nếu FE cần dùng cho mục đích khác
+                  .build());
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.<String>builder()
+                  .code(HttpStatus.UNAUTHORIZED.value())
+                  .message(e.getMessage())
+                  .build());
+      }
+    }
+    @PostMapping("/verify")
+   public ResponseEntity<String> verifyOTP(@RequestBody VerifyRequest request) {
+       try {
+           System.out.println("Verifying OTP for email: " + request.getEmail() + " with OTP: " + request.getOtp());
+           String result = userService.verifyOTP(request.getEmail(), request.getOtp());
+           return ResponseEntity.ok(result);
+       } catch (Exception e) {
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+       }
     }
 
     @GetMapping("/google-success")
