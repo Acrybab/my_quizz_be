@@ -15,6 +15,7 @@ public interface UserService {
     String signIn(UserSignInRequest request);
     String verifyOTP(String email, String otp);
 //void logOut(String token);
+    String resendOTP(String email);
  User processOAuthPostLogin(String email, String name);
 
 }

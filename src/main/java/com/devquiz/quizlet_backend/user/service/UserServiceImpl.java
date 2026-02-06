@@ -62,6 +62,10 @@ public class UserServiceImpl implements UserService {
 //            throw new RuntimeException("Invalid verification token");
 //        }
 //    }
+
+
+
+
     @Override
     public String verifyOTP(String email, String otpEntered) {
         String storedOtp = (String) redisTemplate.opsForValue().get("otp:" + email);
@@ -84,6 +88,21 @@ public class UserServiceImpl implements UserService {
 
         return "Xác thực thành công!";
     }
+
+    @Override
+    public String resendOTP(String email) {
+        System.out.println("Resending OTP to email: " + email);
+           User user = userRepository.findByEmail(email).orElseThrow(
+                     () -> new RuntimeException("User không tồn tại")
+           );
+              String newOTP = String.valueOf(new Random().nextInt(899999) + 100000);
+                redisTemplate.opsForValue().set("otp:" + email, String.valueOf(newOTP), 5, TimeUnit.MINUTES);
+                emailService.sendVerificationEmail(user.getEmail(), newOTP);
+        return "Đã gửi lại mã OTP mới đến email của bạn.";
+
+     }
+
+
     @Override
     public String signIn(UserSignInRequest request) {
         User user = userRepository.findByEmail(request.getEmail())

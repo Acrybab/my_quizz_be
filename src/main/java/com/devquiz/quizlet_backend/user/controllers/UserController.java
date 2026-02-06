@@ -105,6 +105,15 @@ public class UserController {
         // cookie.setAttribute("SameSite", "Lax"); // Quan trọng nếu FE và BE khác domain
         response.addCookie(cookie);
     }
+    @PostMapping("/resend-otp")
+    public ResponseEntity<String> resendOTP(@RequestBody VerifyRequest request) {
+        try {
+            String result = userService.resendOTP(request.getEmail());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 
     /**
      * Hàm helper để tạo Response lỗi nhanh
