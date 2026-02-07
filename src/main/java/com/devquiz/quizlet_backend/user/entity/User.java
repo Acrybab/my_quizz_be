@@ -1,10 +1,13 @@
 package com.devquiz.quizlet_backend.user.entity;
 
+import com.devquiz.quizlet_backend.studySet.entity.StudySet;
 import com.devquiz.quizlet_backend.user.type.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -38,6 +41,10 @@ public class User {
     private LocalDateTime createdUserAt;
     @Column(name = "updated_at")
     private LocalDateTime updatedUserAt;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StudySet> studySets = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         createdUserAt = LocalDateTime.now();
