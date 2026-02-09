@@ -20,6 +20,8 @@ public class Card {
     private String term;
     @Column(nullable = false)
     private String definition;
+//    @Column(nullable = true)
+//    private String cardImage;
     @ManyToOne
     @JoinColumn(name = "study_set_id")
     private StudySet studySet;

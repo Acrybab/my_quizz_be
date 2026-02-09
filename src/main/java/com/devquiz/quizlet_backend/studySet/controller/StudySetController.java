@@ -4,7 +4,9 @@ import com.devquiz.quizlet_backend.studySet.dto.request.StudySetRequest;
 
 import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
 import com.devquiz.quizlet_backend.studySet.service.StudySet.StudySetService;
+import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,19 +17,35 @@ import java.util.List;
 public class StudySetController {
     private final StudySetService studySetService;
     @PostMapping("/create")
-    public StudySetResponse createStudySet(@RequestBody StudySetRequest studySet ) {
+    public ResponseEntity<ApiResponse<StudySetResponse>> create(@RequestBody StudySetRequest request) {
+        StudySetResponse data = studySetService.createStudySet(request);
 
-        return studySetService.createStudySet(studySet);
+        // Bọc dữ liệu vào ApiResponse
+        ApiResponse<StudySetResponse> response = new ApiResponse<>();
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
     }
 
      @GetMapping("")
-    public List<StudySetResponse> getAllStudySets() {
-         return studySetService.getAllStudySets();
+    public ResponseEntity<ApiResponse<List<StudySetResponse>>> getAllStudySets() {
+         ApiResponse<List<StudySetResponse>> response = ApiResponse.<List<StudySetResponse>>builder()
+                 .code(200)
+                 .message("Lấy danh sách Study Sets thành công")
+                 .data(studySetService.getAllStudySets())
+                 .build();
+            return ResponseEntity.ok(response);
      }
 
      @GetMapping("/{id}")
-    public StudySetResponse getStudySetById(@PathVariable Long id) {
-         return studySetService.getStudySetById(id);
+    public ResponseEntity<ApiResponse<StudySetResponse>> getStudySetById(@PathVariable Long id) {
+         return ResponseEntity.ok(
+                 ApiResponse.<StudySetResponse>builder()
+                         .code(200)
+                         .message("Lấy Study Set thành công")
+                         .data(studySetService.getStudySetById(id))
+                         .build()
+         );
      }
      @PutMapping ("/{id}")
     public StudySetResponse updateStudySet(@PathVariable Long id, @RequestBody StudySetRequest studySetRequest) {

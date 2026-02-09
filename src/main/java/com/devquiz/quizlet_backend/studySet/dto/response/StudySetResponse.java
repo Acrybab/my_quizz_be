@@ -17,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudySetResponse {
+    private Long studySetId;
     private String title;
     private String description;
     private String coverImage;

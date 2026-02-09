@@ -15,5 +15,6 @@ public class CardRequest {
 private String term;
 @NotBlank(message = "Definition cannot be blank")
 private String definition;
+//private String cardImage;
 
 }

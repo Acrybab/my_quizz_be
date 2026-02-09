@@ -22,7 +22,7 @@ public class StudySetRequest {
     private String title;
     private String description;
     private String coverImage;
-    private boolean isPublic;
+
     @NotEmpty(message = "Study set must have at least one card")
     private List<CardRequest> cards;
     private String userEmail;
