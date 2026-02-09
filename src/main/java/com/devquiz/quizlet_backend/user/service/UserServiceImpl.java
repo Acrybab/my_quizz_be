@@ -3,6 +3,7 @@ package com.devquiz.quizlet_backend.user.service;
 import com.devquiz.quizlet_backend.user.dto.request.UserRegisterRequest;
 import com.devquiz.quizlet_backend.user.dto.request.UserSignInRequest;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
+import com.devquiz.quizlet_backend.user.dto.response.SignInResponse;
 import com.devquiz.quizlet_backend.user.dto.response.UserResponse;
 import com.devquiz.quizlet_backend.user.entity.User;
 import com.devquiz.quizlet_backend.user.respository.UserRepository;
@@ -104,7 +105,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public String signIn(UserSignInRequest request) {
+    public ApiResponse<SignInResponse> signIn(UserSignInRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -114,7 +115,14 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("User account is not verified");
         }
 
-        return jwtService.generateJwtToken(user.getEmail());
+        return ApiResponse.<SignInResponse>builder()
+                .code(200)
+                .message("Sign in successful")
+                .data(new SignInResponse(
+                        jwtService.generateJwtToken(user.getEmail()),
+                        user.getEmail()
+                ))
+                .build();
     }
 
 //    @Override

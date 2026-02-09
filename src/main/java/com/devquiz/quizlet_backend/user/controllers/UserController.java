@@ -4,6 +4,7 @@ import com.devquiz.quizlet_backend.user.dto.request.UserRegisterRequest;
 import com.devquiz.quizlet_backend.user.dto.request.UserSignInRequest;
 import com.devquiz.quizlet_backend.user.dto.request.VerifyRequest;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
+import com.devquiz.quizlet_backend.user.dto.response.SignInResponse;
 import com.devquiz.quizlet_backend.user.dto.response.UserResponse;
 import com.devquiz.quizlet_backend.user.entity.User;
 import com.devquiz.quizlet_backend.user.service.JwtService.JwtService;
@@ -37,22 +38,25 @@ public class UserController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<ApiResponse<String>> signIn(@RequestBody UserSignInRequest userRequest, HttpServletResponse response) {
-      try {
-          String token = userService.signIn(userRequest);
-          addTokenToCookie(response, token); // Sử dụng hàm dùng chung
+    public ResponseEntity<ApiResponse<SignInResponse>> signIn(@RequestBody UserSignInRequest userRequest, HttpServletResponse response) {
+        try {
+            // Lấy toàn bộ data (bao gồm token và email) từ service
+            SignInResponse signInData = userService.signIn(userRequest).getData();
 
-          return ResponseEntity.ok(ApiResponse.<String>builder()
-                  .code(1000)
-                  .message("Sign-in successfully")
-                  .data(token) // Vẫn trả về token nếu FE cần dùng cho mục đích khác
-                  .build());
-      } catch (Exception e) {
-          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.<String>builder()
-                  .code(HttpStatus.UNAUTHORIZED.value())
-                  .message(e.getMessage())
-                  .build());
-      }
+            // Lưu token vào cookie như cũ
+            addTokenToCookie(response, signInData.getToken());
+
+            return ResponseEntity.ok(ApiResponse.<SignInResponse>builder()
+                    .code(1000)
+                    .message("Sign-in successfully")
+                    .data(signInData) // Trả về cả object { token, userEmail }
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.<SignInResponse>builder()
+                    .code(HttpStatus.UNAUTHORIZED.value())
+                    .message(e.getMessage())
+                    .build());
+        }
     }
     @PostMapping("/verify")
    public ResponseEntity<String> verifyOTP(@RequestBody VerifyRequest request) {
@@ -98,7 +102,7 @@ public class UserController {
      */
     private void addTokenToCookie(HttpServletResponse response, String token) {
         Cookie cookie = new Cookie(COOKIE_NAME, token);
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
         cookie.setSecure(false); // Đổi thành true khi deploy lên HTTPS
         cookie.setPath("/");
         cookie.setMaxAge(COOKIE_MAX_AGE);

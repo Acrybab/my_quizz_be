@@ -43,7 +43,7 @@ public class StudySetServiceImpl implements StudySetService {
             studySet.setTitle(studySetRequest.getTitle());
             studySet.setDescription(studySetRequest.getDescription());
             studySet.setCoverImage(studySetRequest.getCoverImage());
-            studySet.setPublic(studySetRequest.isPublic());
+            studySet.setPublic(true);
             studySet.setUser(currentUser);
             List<CardRequest> cards = studySetRequest.getCards();
             studySet.setCards(cards.stream().map(cardRequest -> {
@@ -68,26 +68,34 @@ public class StudySetServiceImpl implements StudySetService {
 
     }
 
-     private StudySetResponse getStudySetResponse(StudySet studySet) {
-         StudySetResponse studySetResponse = new StudySetResponse();
-         studySetResponse.setTitle(studySet.getTitle());
-         studySetResponse.setDescription(studySet.getDescription());
-         studySetResponse.setCoverImage(studySet.getCoverImage());
-         studySetResponse.setPublic(studySet.isPublic());
-         studySetResponse.setUserName(studySet.getUser().getUserName());
-         studySetResponse.setAvatarUrl(studySet.getUser().getAvatarUrl());
-         List<CardResponse> cardResponses = studySet.getCards().stream().map(card -> {
-             CardResponse cr = new CardResponse();
-             cr.setCardId(card.getCardId());
-             cr.setTerm(card.getTerm());
-             cr.setDefinition(card.getDefinition());
-             return cr;
-         }).collect(Collectors.toList());
+    private StudySetResponse getStudySetResponse(StudySet studySet) {
+        StudySetResponse response = new StudySetResponse();
+        response.setStudySetId(studySet.getStudySetId());
+        response.setTitle(studySet.getTitle());
+        response.setDescription(studySet.getDescription());
+        response.setCoverImage(studySet.getCoverImage());
+        response.setPublic(studySet.isPublic());
 
-         studySetResponse.setCards(cardResponses);
+        // Ánh xạ thông tin User sang String/URL phẳng
+        if (studySet.getUser() != null) {
+            response.setUserName(studySet.getUser().getUserName());
+            response.setAvatarUrl(studySet.getUser().getAvatarUrl());
+        }
 
-         return studySetResponse;
-     }
+        // Ánh xạ danh sách Card
+        List<CardResponse> cardResponses = studySet.getCards().stream()
+                .map(card -> {
+                    CardResponse cr = new CardResponse();
+                    cr.setCardId(card.getCardId());
+                    cr.setTerm(card.getTerm());
+                    cr.setDefinition(card.getDefinition());
+                    return cr;
+                }).collect(Collectors.toList());
+
+        response.setCards(cardResponses);
+
+        return response;
+    }
 
 
     @Override
@@ -106,10 +114,11 @@ public class StudySetServiceImpl implements StudySetService {
                 .orElseThrow(() -> new IllegalArgumentException("Study set not found"));
 
         // 1. Cập nhật các thông tin cơ bản
+
         studySet.setTitle(studySetRequest.getTitle());
         studySet.setDescription(studySetRequest.getDescription());
         studySet.setCoverImage(studySetRequest.getCoverImage());
-        studySet.setPublic(studySetRequest.isPublic());
+        studySet.setPublic(true);
 
         // 2. Cập nhật danh sách Cards
         // Xóa sạch các card cũ trong list hiện tại (Hibernate sẽ tự hiểu để DELETE trong DB nhờ orphanRemoval)
@@ -120,6 +129,7 @@ public class StudySetServiceImpl implements StudySetService {
             studySetRequest.getCards().forEach(cardRequest -> {
                 Card card = new Card();
                 card.setTerm(cardRequest.getTerm());
+//                card.setCardImage(cardRequest.getCardImage());
                 card.setDefinition(cardRequest.getDefinition());
                 card.setStudySet(studySet); // Thiết lập mối quan hệ
                 studySet.getCards().add(card); // Thêm vào list đang được quản lý
