@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 @Getter
@@ -22,7 +23,7 @@ public class StudySetRequest {
     private String title;
     private String description;
     private String coverImage;
-
+    private MultipartFile file;
     @NotEmpty(message = "Study set must have at least one card")
     private List<CardRequest> cards;
     private String userEmail;

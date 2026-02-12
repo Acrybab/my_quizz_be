@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -15,6 +16,6 @@ public class CardRequest {
 private String term;
 @NotBlank(message = "Definition cannot be blank")
 private String definition;
-//private String cardImage;
+private MultipartFile cardImage;
 
 }
