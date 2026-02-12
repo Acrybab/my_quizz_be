@@ -6,6 +6,7 @@ import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
 import com.devquiz.quizlet_backend.studySet.service.StudySet.StudySetService;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudySetController {
     private final StudySetService studySetService;
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponse<StudySetResponse>> create(@RequestBody StudySetRequest request) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, value = "/create")
+    public ResponseEntity<ApiResponse<StudySetResponse>> create(@ModelAttribute StudySetRequest request) {
         StudySetResponse data = studySetService.createStudySet(request);
 
         // Bọc dữ liệu vào ApiResponse

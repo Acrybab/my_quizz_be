@@ -7,6 +7,7 @@ import com.devquiz.quizlet_backend.studySet.dto.request.StudySetRequest;
 import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
 import com.devquiz.quizlet_backend.studySet.entity.StudySet;
 import com.devquiz.quizlet_backend.studySet.repository.StudySetRepository;
+import com.devquiz.quizlet_backend.studySet.service.S3Service.S3Service;
 import com.devquiz.quizlet_backend.user.entity.User;
 import com.devquiz.quizlet_backend.user.respository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 public class StudySetServiceImpl implements StudySetService {
     private final StudySetRepository studySetRepository;
     private final UserRepository    userRepository;
-
+    private final S3Service s3Service;
 
     private void validateRequest(StudySetRequest request) {
         if (request.getTitle() == null || request.getTitle().isBlank())
@@ -39,21 +40,31 @@ public class StudySetServiceImpl implements StudySetService {
 
             validateRequest(studySetRequest);
 
+//            String s3ImageUrl = s3Service.uploadFile(studySetRequest.getFile());
             StudySet studySet = new StudySet();
             studySet.setTitle(studySetRequest.getTitle());
             studySet.setDescription(studySetRequest.getDescription());
-            studySet.setCoverImage(studySetRequest.getCoverImage());
+
+            if(studySetRequest.getFile()!=null && !studySetRequest.getFile().isEmpty()){
+                String coverUrl = s3Service.uploadFile(studySetRequest.getFile());
+                studySet.setCoverImage(coverUrl);
+            }
             studySet.setPublic(true);
             studySet.setUser(currentUser);
+
             List<CardRequest> cards = studySetRequest.getCards();
             studySet.setCards(cards.stream().map(cardRequest -> {
                 Card card = new Card();
                 card.setTerm(cardRequest.getTerm());
                 card.setDefinition(cardRequest.getDefinition());
                 card.setStudySet(studySet);
+             if(cardRequest.getCardImage() != null && !cardRequest.getCardImage().isEmpty()){
+                 String cardImageUrl = s3Service.uploadFile(cardRequest.getCardImage());
+                 card.setCardImage(cardImageUrl);
+             }
                 return card;
             }).collect(Collectors.toList()));
-
+//            studySet.setCards(cards);
             StudySet savedStudySet = studySetRepository.save(studySet);
 
             return getStudySetResponse(savedStudySet);
@@ -76,7 +87,6 @@ public class StudySetServiceImpl implements StudySetService {
         response.setCoverImage(studySet.getCoverImage());
         response.setPublic(studySet.isPublic());
 
-        // Ánh xạ thông tin User sang String/URL phẳng
         if (studySet.getUser() != null) {
             response.setUserName(studySet.getUser().getUserName());
             response.setAvatarUrl(studySet.getUser().getAvatarUrl());
@@ -88,6 +98,7 @@ public class StudySetServiceImpl implements StudySetService {
                     CardResponse cr = new CardResponse();
                     cr.setCardId(card.getCardId());
                     cr.setTerm(card.getTerm());
+                   cr.setCardImage(card.getCardImage());
                     cr.setDefinition(card.getDefinition());
                     return cr;
                 }).collect(Collectors.toList());

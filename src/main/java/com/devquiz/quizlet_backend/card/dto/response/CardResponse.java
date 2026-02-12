@@ -13,4 +13,5 @@ public class CardResponse {
     private Long cardId;
     private String term;
     private String definition;
+    private String cardImage;
 }
