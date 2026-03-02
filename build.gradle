@@ -30,6 +30,20 @@ dependencies {
 
 	// AWS S3 Module
 	implementation 'software.amazon.awssdk:s3'
+//	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'com.google.genai:google-genai:1.0.0'
+
+	// Các dependencies mặc định của Spring Boot 4.0.3 (ví dụ)
+	implementation 'org.springframework.boot:spring-boot-starter'
+	// Nếu bạn muốn tích hợp AI dễ dàng (OpenAI, Ollama, Azure AI,...)
+	// Lưu ý: Cần add repository của Spring Milestone nếu dùng bản mới nhất
+//	implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M1'
+	// Hỗ trợ JSON (thường đi kèm starter-web)
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+	testImplementation 'io.projectreactor:reactor-test'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -50,7 +64,11 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
-
+repositories {
+	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
+}
 tasks.named('test') {
 	useJUnitPlatform()
 }

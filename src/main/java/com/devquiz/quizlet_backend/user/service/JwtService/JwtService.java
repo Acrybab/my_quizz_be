@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-    private final String SECRET_KEY = "your-very-secure-secret-key-that-must-be-at-least-32-characters-long-2026";
+    private final String SECRET_KEY = "YourFinalSecretKeyMustBeVeryLongAndSecureAtLeast32CharsLong";
     public String generateJwtToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
@@ -43,8 +43,7 @@ public class JwtService {
     private Key getSignInKey() {
         // SECRET_KEY là một chuỗi Base64 dài (tối thiểu 256-bit hay 32 ký tự)
         // Bạn nên để chuỗi này trong file application.properties
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
     // Hàm đọc toàn bộ nội dung Payload của JWT
     private Claims extractAllClaims(String token) {

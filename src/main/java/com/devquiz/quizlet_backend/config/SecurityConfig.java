@@ -28,7 +28,10 @@ public class SecurityConfig {
                 }))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/users/**","/api/v1/users/verify","/api/v1/study-sets/**").permitAll()
+                        .requestMatchers("/api/v1/users/**","/api/v1/users/verify").permitAll()
+                        .requestMatchers("/api/v1/study-sets/**").authenticated()
+                        .requestMatchers("/api/v1/study-groups/**").authenticated()
+                        .requestMatchers("/api/v1/learning/**").authenticated()
                         .requestMatchers("/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )

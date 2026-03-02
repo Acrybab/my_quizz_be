@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Optional;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,5 +15,6 @@ public class CardResponse {
     private Long cardId;
     private String term;
     private String definition;
-    private String cardImage;
+    private Optional<String> cardImage;
+    private Optional<String> cardStatus;
 }

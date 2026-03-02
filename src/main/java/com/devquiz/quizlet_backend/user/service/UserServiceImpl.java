@@ -120,7 +120,8 @@ public class UserServiceImpl implements UserService {
                 .message("Sign in successful")
                 .data(new SignInResponse(
                         jwtService.generateJwtToken(user.getEmail()),
-                        user.getEmail()
+                        user.getEmail(),
+                        user.getUserId()
                 ))
                 .build();
     }
@@ -182,7 +183,7 @@ public class UserServiceImpl implements UserService {
     private UserResponse mapToUserResponse(User user){
         return new UserResponse(
                 user.getUserId(),
-                user.getUserName(),
+                user.getUsername(),
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
