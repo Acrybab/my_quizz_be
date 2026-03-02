@@ -21,9 +21,10 @@ public class StudySetRequest {
     @NotBlank(message = "Title cannot be blank")
     @Size(min=3, max=100, message = "Title must be between 3 and 100 characters")
     private String title;
+    @Size(max=500, message = "Description cannot exceed 500 characters")
     private String description;
-    private String coverImage;
-    private MultipartFile file;
+    private MultipartFile coverImage;
+//    private MultipartFile file;
     @NotEmpty(message = "Study set must have at least one card")
     private List<CardRequest> cards;
     private String userEmail;

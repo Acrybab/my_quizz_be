@@ -4,9 +4,12 @@ import com.devquiz.quizlet_backend.studySet.entity.StudySet;
 import com.devquiz.quizlet_backend.user.type.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -16,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
@@ -55,5 +58,34 @@ public class User {
     protected void onUpdate() {
         updatedUserAt = LocalDateTime.now();
     }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Trả về danh sách quyền (ví dụ: ROLE_USER)
+        return List.of();
+    }
 
+    @Override
+    public String getUsername() {
+        return this.email; // Hoặc field nào bạn dùng để đăng nhập
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

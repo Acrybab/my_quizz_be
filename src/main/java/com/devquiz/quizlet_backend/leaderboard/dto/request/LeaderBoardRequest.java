@@ -1,4 +1,4 @@
-package com.devquiz.quizlet_backend.user.dto.response;
+package com.devquiz.quizlet_backend.leaderboard.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignInResponse {
-    private String token;
-    private String email;
+public class LeaderBoardRequest {
     private Long userId;
+    private int currentScore;
+    private Double currentTime;
+    private Long studySetId;
 }

@@ -1,6 +1,7 @@
 package com.devquiz.quizlet_backend.user.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
