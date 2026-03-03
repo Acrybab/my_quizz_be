@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String verifyOTP(String email, String otpEntered) {
         String storedOtp = (String) redisTemplate.opsForValue().get("otp:" + email);
-        System.out.println(storedOtp + "storedOtp" +otpEntered);
+
         if (storedOtp == null) {
             throw new RuntimeException("Mã OTP đã hết hạn hoặc không tồn tại");
         }
@@ -173,6 +173,42 @@ public class UserServiceImpl implements UserService {
                 return userRepository.save(newUser);
          }
 
+    }
+
+    @Override
+    public void forgotPassword(String email) {
+       User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("User not found with email: " + email)
+       );
+
+       String OTP = String.valueOf(new Random().nextInt(899999) + 100000);
+         redisTemplate.opsForValue().set("otp:" + email, String.valueOf(OTP), 5, TimeUnit.MINUTES);
+            emailService.sendForgotPasswordEmail(email, OTP);
+
+    }
+
+    @Override
+    public String updatePassword(String email, String newPassword , String oldPassword) {
+//        String storedOtp = (String) redisTemplate.opsForValue().get("otp:" + email);
+//        System.out.println("Stored OTP for email " + email + ": " + storedOtp);
+//        if (storedOtp == null) {
+//            throw new RuntimeException("Mã OTP đã hết hạn hoặc không tồn tại");
+//        }
+       User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("User not found with email: " + email)
+       );
+
+
+        String storedPassword = user.getPassword();
+        if (!passwordEncoder.matches(oldPassword, storedPassword)) {
+            return "Old password is incorrect";
+        }
+
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+        redisTemplate.delete("otp:forgot:" + email);
+        return "Password updated successfully";
     }
 
 

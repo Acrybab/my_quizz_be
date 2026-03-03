@@ -83,7 +83,6 @@ public class StudySetServiceImpl implements StudySetService {
     }
 
 
-
     @Override
     public QuizzDataReponse generateQuiz(Long studySetId, Long userId) {
         // 1. Tìm bộ thẻ
@@ -190,24 +189,22 @@ public class StudySetServiceImpl implements StudySetService {
         if (allCards.isEmpty()) {
             throw new IllegalArgumentException("Bộ thẻ này không có dữ liệu!");
         }
-        List<MatchQuizzResponse> questions = allCards.stream().map(card -> {
-            List<String> distractors = allCards.stream()
-                    .filter(c -> !c.getCardId().equals(card.getCardId()))
-                    .map(Card::getDefinition)
-                    .collect(Collectors.toList());
-
-            Collections.shuffle(distractors);
-            List<String> options = new ArrayList<>(distractors.subList(0, Math.min(3, distractors.size())));
-            options.add(card.getDefinition());
-            Collections.shuffle(options);
-
-            return MatchQuizzResponse.builder()
-                    .term(card.getTerm())
-                    .definition(card.getDefinition()).cardId(card.getCardId()  )
-
-                    .build();
-        }).toList();
-        return questions;
+        List<Card> randomCards = new ArrayList<>(allCards);
+        Collections.shuffle(randomCards);
+        List<Card> selectedCards = randomCards.subList(0, Math.min(6, randomCards.size()));
+        List<MatchQuizzResponse> gamePieces = new ArrayList<>();
+        for (Card card : selectedCards) {
+            gamePieces.add(MatchQuizzResponse.builder().cardId(card.getCardId())
+                    .term(card.getTerm()).type("TERM")
+                    .build());
+            gamePieces.add(
+                    MatchQuizzResponse.builder().cardId(card.getCardId())
+                            .definition(card.getDefinition()).type("DEFINITION")
+                            .build()
+            );
+        }
+        Collections.shuffle(selectedCards);
+        return  gamePieces;
     }
 
     @Override

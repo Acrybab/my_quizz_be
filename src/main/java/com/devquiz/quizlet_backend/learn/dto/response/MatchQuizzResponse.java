@@ -11,4 +11,5 @@ public class MatchQuizzResponse {
     private Long cardId;
     private String term;
     private String definition;
+    private String type;
 }

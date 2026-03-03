@@ -1,8 +1,6 @@
 package com.devquiz.quizlet_backend.user.controllers;
 
-import com.devquiz.quizlet_backend.user.dto.request.UserRegisterRequest;
-import com.devquiz.quizlet_backend.user.dto.request.UserSignInRequest;
-import com.devquiz.quizlet_backend.user.dto.request.VerifyRequest;
+import com.devquiz.quizlet_backend.user.dto.request.*;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
 import com.devquiz.quizlet_backend.user.dto.response.SignInResponse;
 import com.devquiz.quizlet_backend.user.dto.response.UserResponse;
@@ -68,6 +66,28 @@ public class UserController {
            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
        }
     }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        try {
+            String email = request.getEmail();
+            userService.forgotPassword(email);
+            return ResponseEntity.ok("OTP for password reset has been sent to your email.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody UpdatePasswordRequest request) {
+        try {
+            String result = userService.updatePassword(request.getEmail(), request.getNewPassword(), request.getOldPassword());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 
     @GetMapping("/google-success")
     public ResponseEntity<ApiResponse<String>> googleSuccess(

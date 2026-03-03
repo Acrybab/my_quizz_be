@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,6 +14,8 @@ import lombok.Setter;
 public class LeaderBoardRequest {
     private Long userId;
     private int currentScore;
-    private Double currentTime;
     private Long studySetId;
+    private Double bestTime;
+    private Integer attempts;
+    private LocalDateTime lastPlayedAt;
 }

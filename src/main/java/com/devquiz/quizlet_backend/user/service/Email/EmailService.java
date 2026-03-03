@@ -33,6 +33,52 @@ public class EmailService {
             throw new RuntimeException("Failed to send email", e);
         }
     }
+    @Async
+    public void sendForgotPasswordEmail(String toEmail, String otp) {
+        try {
+            System.out.println("Sending forgot password email to: " + toEmail + " with OTP: " + otp);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("Quizlet Dev <your-email@gmail.com>");
+            helper.setTo(toEmail);
+            helper.setSubject("[Quizlet] Forgot Password");
+            String htmlContent = forgotPasswordEmail(otp);
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+    private String forgotPasswordEmail(String otp) {
+        return "<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;\">" +
+                "  <div style=\"background-color: #4255ff; padding: 20px; text-align: center;\">" +
+                "    <h1 style=\"color: white; margin: 0; font-size: 28px;\">Quizlet</h1>" +
+                "  </div>" +
+                "  <div style=\"padding: 30px; line-height: 1.6; color: #333;\">" +
+                "    <h2 style=\"color: #1a1a1a;\">Reset Your Password</h2>" +
+                "    <p>Hi there,</p>" +
+                "    <p>We received a request to reset your password. Please use the following One-Time Password (OTP) to proceed with resetting your password:</p>" +
+                "    <div style=\"text-align: center; margin: 40px 0;\">" +
+                "      <div style=\"margin-bottom: 10px; font-size: 14px; color: #666; font-weight: bold; text-transform: uppercase;\">Your Password Reset Code</div>" +
+                "      <span style=\"display: inline-block; padding: 15px 35px; background-color: #f0f2ff; color: #4255ff; font-size: 36px; font-weight: bold; letter-spacing: 8px; border-radius: 8px; border: 2px solid #4255ff;\">" + otp + "</span>" +
+                "    </div>" +
+                "    <p style=\"font-size: 14px; color: #666; border-top: 1px solid #eee; pt: 20px; margin-top: 30px;\">" +
+                "       This code will <b>expire in 5 minutes</b> for security reasons.<br>" +
+                "       If you did not request a password reset, please ignore this email." +
+                "    </p>" +
+                "  </div>" +
+                "  <div style=\"background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eeeeee;\">" +
+                "    &copy; 2026 Quizlet Backend Team. All rights reserved." +
+                "  </div>" +
+                "</div>";
+    }
+
+
+
 
     private String buildHtmlEmail(String otp) {
         return "<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;\">" +

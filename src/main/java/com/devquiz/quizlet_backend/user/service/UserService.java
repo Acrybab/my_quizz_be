@@ -18,5 +18,6 @@ public interface UserService {
 //void logOut(String token);
     String resendOTP(String email);
  User processOAuthPostLogin(String email, String name);
-
+  void forgotPassword(String email);
+  String updatePassword(String email, String newPassword , String oldPassword);
 }
