@@ -2,6 +2,7 @@ package com.devquiz.quizlet_backend.group.entity;
 
 import com.devquiz.quizlet_backend.studySet.entity.StudySet;
 import com.devquiz.quizlet_backend.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,10 @@ public class StudyGroup {
     @ManyToOne
     @JoinColumn(name="user_id", nullable = false)
     private User admin;
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
+    @JsonIgnore // Quan trọng: Tránh vòng lặp vô hạn khi render JSON
+    private List<GroupMember> members;
 
     @ManyToMany
     @JoinTable(

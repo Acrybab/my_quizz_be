@@ -67,11 +67,11 @@ public class StudySetController {
 
 
      @GetMapping("")
-    public ResponseEntity<ApiResponse<List<StudySetResponse>>> getAllStudySets() {
+    public ResponseEntity<ApiResponse<List<StudySetResponse>>> getAllStudySets(Principal principal) {
          ApiResponse<List<StudySetResponse>> response = ApiResponse.<List<StudySetResponse>>builder()
                  .code(200)
                  .message("Lấy danh sách Study Sets thành công")
-                 .data(studySetService.getAllStudySets())
+                 .data(studySetService.getAllStudySets(principal.getName()))
                  .build();
             return ResponseEntity.ok(response);
      }

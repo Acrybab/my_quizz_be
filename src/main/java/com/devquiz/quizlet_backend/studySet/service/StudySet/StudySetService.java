@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface StudySetService {
 StudySetResponse createStudySet(StudySetRequest studySetRequest);
-List<StudySetResponse> getAllStudySets();
+List<StudySetResponse> getAllStudySets(String userEmail);
 StudySetResponse getStudySetById(Long id);
 StudySetResponse updateStudySet(Long id, StudySetRequest studySetRequest);
 void deleteStudySet(Long id);

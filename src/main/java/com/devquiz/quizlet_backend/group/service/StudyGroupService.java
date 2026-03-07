@@ -45,20 +45,33 @@ public StudyGroupResponse createStudyGroup(StudyGroupRequest studyGroupRequest) 
 }
 
 
-public List<StudyGroupResponse> getAllStudyGroups() {
-    List<StudyGroup> studyGroups = studyGroupRepository.findAll();
+public List<StudyGroupResponse> getAllStudyGroups(String userEmail) {
+    User user = userRepository.findByEmail(userEmail).orElseThrow(
+            () -> new RuntimeException("User not found with email: " + userEmail)
+    );
+    List<StudyGroup> studyGroups = studyGroupRepository.findByMemberUserId(user.getUserId());
     List<StudyGroupResponse> responses = new ArrayList<>();
     for (StudyGroup group : studyGroups) {
         responses.add(mapToResponse(group));
     }
     return responses;
 }
+
+public StudyGroupResponse getStudyGroupById(Long id) {
+    StudyGroup group = studyGroupRepository.findById(id).orElseThrow(
+            () -> new RuntimeException("StudyGroup not found with id: " + id)
+    );
+    return mapToResponse(group);
+}
+
+
+
     private StudyGroupResponse mapToResponse(StudyGroup group) {
         // Giả sử bạn dùng Builder hoặc tạo thủ công
         return StudyGroupResponse.builder()
                 .id(group.getGroupId())
                 .studyGroupName(group.getStudyGroupName())
-                .adminName(group.getAdmin().getUsername())
+                .adminName(group.getAdmin().getFirstName() + " " + group.getAdmin().getLastName())
                 .studySets(group.getStudySets())
                 .build();
     }

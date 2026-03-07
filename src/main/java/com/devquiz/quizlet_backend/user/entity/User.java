@@ -2,6 +2,7 @@ package com.devquiz.quizlet_backend.user.entity;
 
 import com.devquiz.quizlet_backend.studySet.entity.StudySet;
 import com.devquiz.quizlet_backend.user.type.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +27,7 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = true)
     private String userName;
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
     @Column(unique = true, nullable = false)
     private String email;

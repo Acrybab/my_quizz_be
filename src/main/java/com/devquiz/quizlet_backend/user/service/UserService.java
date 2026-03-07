@@ -20,4 +20,9 @@ public interface UserService {
  User processOAuthPostLogin(String email, String name);
   void forgotPassword(String email);
   String updatePassword(String email, String newPassword , String oldPassword);
+  User findUserByEmail(String email);
+
+  List<User> getAllOtherUsers(String userEmail);
+
+
 }

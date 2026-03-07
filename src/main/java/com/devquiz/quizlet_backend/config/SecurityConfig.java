@@ -32,7 +32,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/study-sets/**").authenticated()
                         .requestMatchers("/api/v1/study-groups/**").authenticated()
                         .requestMatchers("/api/v1/learning/**").authenticated()
+                        .requestMatchers("/api/v1/group-members/**").authenticated()
+                        .requestMatchers("/api/v1/notifications/**").authenticated()
                         .requestMatchers("/login/oauth2/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // ÉP TRẢ VỀ JSON KHI CÓ LỖI

@@ -10,6 +10,7 @@ import com.devquiz.quizlet_backend.user.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.hibernate.mapping.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -87,7 +90,23 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-
+    @GetMapping("/all-other-users")
+    public ResponseEntity<ApiResponse<List<User>>> getAllOtherUsers(Principal principal) {
+        try {
+            if (Objects.isNull(principal)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            String email = principal.getName();
+            List<User> users = userService.getAllOtherUsers(email);
+            return ResponseEntity.ok(ApiResponse.<List<User>>builder()
+                    .code(200)
+                    .message("Get all other users successfully")
+                    .data(users)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
 
     @GetMapping("/google-success")
     public ResponseEntity<ApiResponse<String>> googleSuccess(
@@ -108,7 +127,7 @@ public class UserController {
             addTokenToCookie(response, token);
 
             return ResponseEntity.ok(ApiResponse.<String>builder()
-                    .code(1000)
+                    .code(200)
                     .message("Google Sign-in successfully")
                     .data(token)
                     .build());

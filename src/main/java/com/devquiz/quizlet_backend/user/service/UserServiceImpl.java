@@ -211,6 +211,22 @@ public class UserServiceImpl implements UserService {
         return "Password updated successfully";
     }
 
+    @Override
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("User not found with email: " + email)
+        );
+   }
+
+    @Override
+    public List<User> getAllOtherUsers(String userEmail) {
+
+       User user = userRepository.findByEmail(userEmail).orElseThrow();
+
+        return userRepository.findAllOtherUsers(user.getUserId()).stream().toList();
+    }
+
+
 
     @Override
     public List<UserResponse> getAllUsers() {

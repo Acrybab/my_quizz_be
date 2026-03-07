@@ -276,8 +276,11 @@ public class StudySetServiceImpl implements StudySetService {
     }
 
     @Override
-    public List<StudySetResponse> getAllStudySets() {
-        return studySetRepository.findAll().stream().map(this::getStudySetResponse).collect(Collectors.toList());
+    public List<StudySetResponse> getAllStudySets(String userEmail) {
+        User currentUser = userRepository.findByEmail(userEmail).orElseThrow(
+                () -> new IllegalArgumentException("User not found")
+        );
+        return studySetRepository.findAllSavedStudySetsByUserEmail(currentUser.getUserId()).stream().map(this::getStudySetResponse).collect(Collectors.toList());
 
     }
 
@@ -335,19 +338,16 @@ public class StudySetServiceImpl implements StudySetService {
         studySet.setCoverImage(String.valueOf(studySetRequest.getCoverImage()));
         studySet.setPublic(true);
 
-        // 2. Cập nhật danh sách Cards
-        // Xóa sạch các card cũ trong list hiện tại (Hibernate sẽ tự hiểu để DELETE trong DB nhờ orphanRemoval)
+
         studySet.getCards().clear();
 
-        // Thêm các card mới từ request vào chính list đó
         if (studySetRequest.getCards() != null) {
             studySetRequest.getCards().forEach(cardRequest -> {
                 Card card = new Card();
                 card.setTerm(cardRequest.getTerm());
-//                card.setCardImage(cardRequest.getCardImage());
                 card.setDefinition(cardRequest.getDefinition());
-                card.setStudySet(studySet); // Thiết lập mối quan hệ
-                studySet.getCards().add(card); // Thêm vào list đang được quản lý
+                card.setStudySet(studySet);
+                studySet.getCards().add(card);
             });
         }
 

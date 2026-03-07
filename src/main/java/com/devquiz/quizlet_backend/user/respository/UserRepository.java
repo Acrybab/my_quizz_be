@@ -2,6 +2,7 @@ package com.devquiz.quizlet_backend.user.respository;
 
 import com.devquiz.quizlet_backend.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -14,5 +15,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUserName(String userName);
 
     boolean existsByEmail(String email);
+
+
+    @Query("SELECT u FROM User u WHERE u.userId <> :userId")
+       Optional<User>  findAllOtherUsers(Long userId);
 
 }
