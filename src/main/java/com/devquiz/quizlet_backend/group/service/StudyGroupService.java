@@ -3,6 +3,7 @@ package com.devquiz.quizlet_backend.group.service;
 import com.devquiz.quizlet_backend.group.dto.Request.StudyGroupRequest;
 import com.devquiz.quizlet_backend.group.dto.Response.StudyGroupResponse;
 import com.devquiz.quizlet_backend.group.entity.StudyGroup;
+import com.devquiz.quizlet_backend.group.repository.GroupMemberRepository;
 import com.devquiz.quizlet_backend.group.repository.StudyGroupRepository;
 import com.devquiz.quizlet_backend.studySet.entity.StudySet;
 import com.devquiz.quizlet_backend.studySet.repository.StudySetRepository;
@@ -21,6 +22,7 @@ public class StudyGroupService {
     public final StudyGroupRepository studyGroupRepository;
     public final UserRepository userRepository;
     public final StudySetRepository studySetRepository;
+    public final GroupMemberService  groupMemberService;
 public StudyGroupResponse createStudyGroup(StudyGroupRequest studyGroupRequest) {
     User user = userRepository.findById(studyGroupRequest.getUserId()).orElseThrow(
             () -> new RuntimeException("User not found with id: " + studyGroupRequest.getUserId())
@@ -31,6 +33,7 @@ public StudyGroupResponse createStudyGroup(StudyGroupRequest studyGroupRequest) 
     StudyGroup studyGroup = new StudyGroup();
     studyGroup.setStudyGroupName(studyGroupRequest.getStudyGroupName());
     studyGroup.setAdmin(user);
+
     // 3. Khởi tạo list bên trong nếu nó null (Tránh NullPointerException)
     if (studyGroup.getStudySets() == null) {
         studyGroup.setStudySets(new ArrayList<>());
@@ -39,6 +42,7 @@ public StudyGroupResponse createStudyGroup(StudyGroupRequest studyGroupRequest) 
 
     // 4. Lưu và chuyển đổi sang Response
     StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+    groupMemberService.addMemberToGroup(savedGroup.getAdmin().getUserId() , savedGroup.getGroupId(), "ADMIN"); // Thêm admin vào nhóm
 
 
     return mapToResponse(savedGroup) ;

@@ -8,21 +8,32 @@ import com.devquiz.quizlet_backend.user.dto.response.UserResponse;
 import com.devquiz.quizlet_backend.user.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
- UserResponse register(UserRegisterRequest request);
- List<UserResponse> getAllUsers();
-//    void verifyUser(String token);
+    UserResponse register(UserRegisterRequest request);
+
+    List<UserResponse> getAllUsers();
+
+    //    void verifyUser(String token);
     ApiResponse<SignInResponse> signIn(UserSignInRequest request);
+
     String verifyOTP(String email, String otp);
-//void logOut(String token);
+
+    //void logOut(String token);
     String resendOTP(String email);
- User processOAuthPostLogin(String email, String name);
-  void forgotPassword(String email);
-  String updatePassword(String email, String newPassword , String oldPassword);
-  User findUserByEmail(String email);
 
-  List<User> getAllOtherUsers(String userEmail);
+    User processOAuthPostLogin(String email, String name);
 
+    void forgotPassword(String email);
 
+    String updatePassword(String email, String newPassword, String oldPassword);
+
+    User findUserByEmail(String email);
+
+    List<UserResponse> getAllOtherUsers(String userEmail);
+
+    Optional<UserResponse> getMyProfile(String userEmail);
+
+    List<UserResponse> getAllMembersInGroups(Long groupId);
 }

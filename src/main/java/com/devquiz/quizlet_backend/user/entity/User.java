@@ -31,9 +31,9 @@ public class User implements UserDetails {
     private String password;
     @Column(unique = true, nullable = false)
     private String email;
-    @Column(unique = true , nullable = true)
+    @Column(unique =false , nullable = true)
     private String firstName;
-    @Column(unique = true , nullable = true)
+    @Column(unique = false , nullable = true)
     private String lastName;
     @Enumerated(EnumType.STRING)
     @Builder.Default // Quan trọng: Giúp Builder nhận giá trị mặc định nếu bạn không set

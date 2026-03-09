@@ -38,6 +38,20 @@ public class UserController {
         return new ResponseEntity<>(userService.register(user), HttpStatus.CREATED);
     }
 
+    @GetMapping("/members-in-groups/{groupId}")
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllMembersInGroups(@PathVariable Long groupId) {
+        try {
+            List<UserResponse> members = userService.getAllMembersInGroups(groupId);
+            return ResponseEntity.ok(ApiResponse.<List<UserResponse>>builder()
+                    .code(200)
+                    .message("Get all members in groups successfully")
+                    .data(members)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
     @PostMapping("/sign-in")
     public ResponseEntity<ApiResponse<SignInResponse>> signIn(@RequestBody UserSignInRequest userRequest, HttpServletResponse response) {
         try {
@@ -91,17 +105,35 @@ public class UserController {
         }
     }
     @GetMapping("/all-other-users")
-    public ResponseEntity<ApiResponse<List<User>>> getAllOtherUsers(Principal principal) {
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllOtherUsers(Principal principal) {
         try {
             if (Objects.isNull(principal)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             String email = principal.getName();
-            List<User> users = userService.getAllOtherUsers(email);
-            return ResponseEntity.ok(ApiResponse.<List<User>>builder()
+            List<UserResponse> users = userService.getAllOtherUsers(email);
+            return ResponseEntity.ok(ApiResponse.<List<UserResponse>>builder()
                     .code(200)
                     .message("Get all other users successfully")
                     .data(users)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+    @GetMapping("/my-profile")
+    public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(Principal principal) {
+        try {
+            if (Objects.isNull(principal)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            String email = principal.getName();
+            UserResponse userProfile = userService.getMyProfile(email)
+                    .orElseThrow(() -> new RuntimeException("User profile not found"));
+            return ResponseEntity.ok(ApiResponse.<UserResponse>builder()
+                    .code(200)
+                    .message("Get my profile successfully")
+                    .data(userProfile)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

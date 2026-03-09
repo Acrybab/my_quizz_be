@@ -40,7 +40,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         GroupMember newGroupMember = new GroupMember();
         newGroupMember.setGroup(studyGroup);
         newGroupMember.setUser(user);
-        newGroupMember.setRole("MEMBER");
+        newGroupMember.setRole(role);
 
         GroupMember savedGroupMember = groupMemberRepository.save(newGroupMember);
 
