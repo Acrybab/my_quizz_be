@@ -9,6 +9,8 @@ import com.devquiz.quizlet_backend.learn.dto.response.QuizzDataReponse;
 import com.devquiz.quizlet_backend.studySet.dto.request.StudySetRequest;
 
 import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
+import com.devquiz.quizlet_backend.studySet.dto.response.TestQuestionDto;
+import com.devquiz.quizlet_backend.studySet.dto.response.TestType;
 import com.devquiz.quizlet_backend.studySet.service.AIService.AIService;
 import com.devquiz.quizlet_backend.studySet.service.StudySet.StudySetService;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
@@ -184,5 +186,21 @@ public class StudySetController {
         );
      }
 
+     @GetMapping("/{id}/generate-test")
+    public ResponseEntity<ApiResponse<List<TestQuestionDto>>> generateTest(
+            @PathVariable Long id,
+            @RequestParam int limit,
+            @RequestParam(defaultValue = "MULTIPLE_CHOICE") TestType testType) {
+
+        List<TestQuestionDto> testQuestions = studySetService.generateTest(id, limit, testType);
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<TestQuestionDto>>builder()
+                        .code(200)
+                        .message("Tạo Test thành công")
+                        .data(testQuestions)
+                        .build()
+        );
+     }
 
 }

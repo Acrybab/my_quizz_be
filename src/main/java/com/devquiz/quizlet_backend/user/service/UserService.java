@@ -6,6 +6,7 @@ import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
 import com.devquiz.quizlet_backend.user.dto.response.SignInResponse;
 import com.devquiz.quizlet_backend.user.dto.response.UserResponse;
 import com.devquiz.quizlet_backend.user.entity.User;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,4 +37,7 @@ public interface UserService {
     Optional<UserResponse> getMyProfile(String userEmail);
 
     List<UserResponse> getAllMembersInGroups(Long groupId);
+
+    String uploadAvatar(String email, MultipartFile avatarFile);
+    
 }

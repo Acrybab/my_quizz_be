@@ -8,6 +8,8 @@ import com.devquiz.quizlet_backend.learn.dto.response.QuizzDataReponse;
 import com.devquiz.quizlet_backend.studySet.dto.request.SavedStudySetRequest;
 import com.devquiz.quizlet_backend.studySet.dto.request.StudySetRequest;
 import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
+import com.devquiz.quizlet_backend.studySet.dto.response.TestQuestionDto;
+import com.devquiz.quizlet_backend.studySet.dto.response.TestType;
 
 import java.util.List;
 
@@ -23,5 +25,5 @@ List<CardResponse> getCardsWithStatus(String userEmail, Long cardId);
 QuizzDataReponse generateQuiz(Long studySetId , Long userId);
 List<CardResponse> getMasteredCards(String userEmail);
 List<MatchQuizzResponse> generateMatchQuiz(Long studySetId, Long userId);
-
+List <TestQuestionDto> generateTest(Long studySetId, int limit , TestType testType);
 }

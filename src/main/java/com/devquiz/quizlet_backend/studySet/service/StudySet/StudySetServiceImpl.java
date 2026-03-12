@@ -14,6 +14,8 @@ import com.devquiz.quizlet_backend.learn.types.LearningStatus;
 import com.devquiz.quizlet_backend.studySet.dto.request.SavedStudySetRequest;
 import com.devquiz.quizlet_backend.studySet.dto.request.StudySetRequest;
 import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
+import com.devquiz.quizlet_backend.studySet.dto.response.TestQuestionDto;
+import com.devquiz.quizlet_backend.studySet.dto.response.TestType;
 import com.devquiz.quizlet_backend.studySet.entity.SavedStudySet;
 import com.devquiz.quizlet_backend.studySet.entity.StudySet;
 import com.devquiz.quizlet_backend.studySet.repository.SavedStudySetRepository;
@@ -204,8 +206,9 @@ public class StudySetServiceImpl implements StudySetService {
             );
         }
         Collections.shuffle(selectedCards);
-        return  gamePieces;
+        return gamePieces;
     }
+
 
     @Override
 // Logic gợi ý trong StudySetService
@@ -362,5 +365,83 @@ public class StudySetServiceImpl implements StudySetService {
             throw new IllegalArgumentException("Study set not found");
         }
         studySetRepository.deleteById(id);
+    }
+
+
+    @Override
+    public List<TestQuestionDto> generateTest(Long studySetId, int limit, TestType testType) {
+        List<Card> allCards = cardRepository.findByStudySetId(studySetId);
+        if (allCards.isEmpty()) return new ArrayList<>();
+
+        Collections.shuffle(allCards);
+        List<Card> testCards = allCards.stream().limit(limit).toList();
+        List<TestQuestionDto> testQuestions = new ArrayList<>();
+        Random random = new Random();
+
+        for (Card card : testCards) {
+            TestQuestionDto dto = new TestQuestionDto();
+            dto.setCardId(card.getCardId());
+            dto.setTestType(testType);
+            dto.setQuestion(card.getTerm());
+
+            switch (testType) {
+                case MULTIPLE_CHOICE:
+                    List<String> distractors = allCards.stream()
+                            .filter(c -> !c.getCardId().equals(card.getCardId()))
+                            .map(Card::getDefinition)
+                            .collect(Collectors.toList());
+                    Collections.shuffle(distractors);
+
+                    List<String> options = new ArrayList<>(distractors.subList(0, Math.min(3, distractors.size())));
+                    options.add(card.getDefinition());
+                    Collections.shuffle(options);
+                    dto.setOptions(options);
+                    break;
+
+                case TRUE_FALSE:
+                    // BE quyết định hiển thị định nghĩa đúng hay sai
+                    boolean shouldShowCorrect = random.nextBoolean();
+                    if (shouldShowCorrect) {
+                        dto.setShowDefinitions(card.getDefinition());
+                    } else {
+                        String fakeDef = allCards.stream()
+                                .filter(c -> !c.getCardId().equals(card.getCardId()))
+                                .map(Card::getDefinition)
+                                .findAny().orElse(card.getDefinition());
+                        dto.setShowDefinitions(fakeDef);
+                    }
+                    // KHÔNG trả về correctAnswer.
+                    // BE sẽ tự tính toán lại dựa trên cardId khi người dùng nộp bài (True/False).
+                    break;
+
+                case FILL_IN_THE_BLANK:
+                    String definition = card.getDefinition();
+                    String maskedHint = maskString(definition);
+                    dto.setPlaceHolder("Type the definition...");
+                    dto.setShowDefinitions(maskedHint);
+                    break;
+            }
+            testQuestions.add(dto);
+        }
+        return testQuestions;
+    }
+    private String maskString(String input) {
+        if (input == null || input.length() <= 2) {
+            return input; // Không đủ dài để che
+        }
+
+        StringBuilder masked = new StringBuilder();
+        char[] chars = input.toCharArray();
+
+        for (int i = 0; i < chars.length; i++) {
+            // Giữ lại ký tự đầu, cuối và dấu cách
+            if (i == 0 || i == chars.length- 1 || chars[i] == ' ') {
+                masked.append(chars[i]);
+            } else {
+                // Che các ký tự còn lại
+                masked.append("_");
+            }
+        }
+        return masked.toString();
     }
 }

@@ -1,5 +1,6 @@
 package com.devquiz.quizlet_backend.user.service;
 
+import com.devquiz.quizlet_backend.studySet.service.S3Service.S3Service;
 import com.devquiz.quizlet_backend.user.dto.request.UserRegisterRequest;
 import com.devquiz.quizlet_backend.user.dto.request.UserSignInRequest;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.util.*;
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final JwtService jwtService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final S3Service s3Service;
     private static final int SUCCESS_STATUS = 200;
 
     @Override
@@ -210,6 +213,25 @@ public class UserServiceImpl implements UserService {
         return memberInGroups.stream()
                 .map(this::mapToUserResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String uploadAvatar(String email, MultipartFile avatarFile) {
+        try {
+            User user = userRepository.findByEmail(email).orElseThrow(
+                    () -> new RuntimeException("User not found with email: " + email)
+            );
+            String avatarUrl = s3Service.uploadFile(avatarFile);
+            user.setAvatarUrl(avatarUrl);
+            userRepository.save(user);
+
+            return avatarUrl;
+        } catch (Exception e) {
+
+            throw new RuntimeException("Failed to upload avatar: " + e.getMessage());
+        }
+
+
     }
 
 
