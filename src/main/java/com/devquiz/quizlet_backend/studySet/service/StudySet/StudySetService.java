@@ -7,9 +7,13 @@ import com.devquiz.quizlet_backend.learn.dto.response.QuizQuestionResponse;
 import com.devquiz.quizlet_backend.learn.dto.response.QuizzDataReponse;
 import com.devquiz.quizlet_backend.studySet.dto.request.SavedStudySetRequest;
 import com.devquiz.quizlet_backend.studySet.dto.request.StudySetRequest;
+import com.devquiz.quizlet_backend.studySet.dto.request.TestSubmissionDto;
 import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
 import com.devquiz.quizlet_backend.studySet.dto.response.TestQuestionDto;
 import com.devquiz.quizlet_backend.studySet.dto.response.TestType;
+import com.devquiz.quizlet_backend.studySet.entity.StudySet;
+import com.devquiz.quizlet_backend.studySet.entity.TestResult;
+import com.devquiz.quizlet_backend.user.entity.User;
 
 import java.util.List;
 
@@ -26,4 +30,6 @@ QuizzDataReponse generateQuiz(Long studySetId , Long userId);
 List<CardResponse> getMasteredCards(String userEmail);
 List<MatchQuizzResponse> generateMatchQuiz(Long studySetId, Long userId);
 List <TestQuestionDto> generateTest(Long studySetId, int limit , TestType testType);
+TestResult submitTest(TestSubmissionDto testSubmissionDto, User user);
+List<TestResult> getTestResults(Long studySetId , String userEmail);
 }

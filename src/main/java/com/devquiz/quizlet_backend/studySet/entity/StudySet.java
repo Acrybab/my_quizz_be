@@ -25,7 +25,7 @@ public class StudySet {
     @Id
     @GeneratedValue(strategy =  GenerationType.IDENTITY )
     private long studySetId;
-    @Column(unique=true , nullable = false)
+    @Column(unique=false , nullable = false)
     private String title;
     @Column( nullable = true,columnDefinition = "TEXT")
     private String description;
