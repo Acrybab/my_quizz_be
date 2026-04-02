@@ -8,13 +8,15 @@ import com.devquiz.quizlet_backend.learn.dto.response.QuizQuestionResponse;
 import com.devquiz.quizlet_backend.learn.dto.response.QuizzDataReponse;
 import com.devquiz.quizlet_backend.studySet.dto.request.StudySetRequest;
 
-import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
-import com.devquiz.quizlet_backend.studySet.dto.response.TestQuestionDto;
-import com.devquiz.quizlet_backend.studySet.dto.response.TestType;
+import com.devquiz.quizlet_backend.studySet.dto.request.TestSubmissionDto;
+import com.devquiz.quizlet_backend.studySet.dto.response.*;
+import com.devquiz.quizlet_backend.studySet.entity.TestResult;
 import com.devquiz.quizlet_backend.studySet.service.AIService.AIService;
 import com.devquiz.quizlet_backend.studySet.service.StudySet.StudySetService;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
+import com.devquiz.quizlet_backend.user.dto.response.UserResponse;
 import com.devquiz.quizlet_backend.user.entity.User;
+import com.devquiz.quizlet_backend.user.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
@@ -32,8 +34,11 @@ import java.util.Map;
 public class StudySetController {
     private final StudySetService studySetService;
     private final AIService aiService;
+    private final UserRepository userRepository;
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, value = "/create")
     public ResponseEntity<ApiResponse<StudySetResponse>> create(@ModelAttribute StudySetRequest request) {
+        System.out.println("Received StudySetRequest: " + request);
         StudySetResponse data = studySetService.createStudySet(request);
 
         // Bọc dữ liệu vào ApiResponse
@@ -42,23 +47,46 @@ public class StudySetController {
 
         return ResponseEntity.ok(response);
     }
-//    @GetMapping("/status-cards/{userId}/{cardId}")
-//    public ResponseEntity<ApiResponse<List<CardResponse>>> getCardsWithStatus(@PathVariable("userId") Long userId, @PathVariable("cardId") Long cardId) {
-//        List<CardResponse> data = studySetService.getCardsWithStatus(
-//                    userId, cardId
-//        ); // Thay null bằng LearningRequest nếu cần
-//
-//        ApiResponse<List<CardResponse>> response = new ApiResponse<>();
-//        response.setData(data);
-//
-//        return ResponseEntity.ok(
-//                ApiResponse.<List<CardResponse>>builder()
-//                        .code(200)
-//                        .message("Lấy danh sách Study Sets thành công")
-//                        .data(studySetService.getCardsWithStatus(userId, cardId))
-//                        .build()
-//        );
-//    }
+  @PostMapping("/submit-test")
+  public ResponseEntity<ApiResponse<TestResult>> submit (@RequestBody TestSubmissionDto dto , Principal principal ){
+      User user = userRepository.findByEmail(principal.getName()).orElseThrow(
+                () -> new RuntimeException("User not found")
+      );
+        TestResult result = studySetService.submitTest(dto, user);
+     return   ResponseEntity.ok(ApiResponse.<TestResult>builder()
+                .code(200)
+                .message("Nộp bài kiểm tra thành công")
+                .data(result)
+                .build());
+
+    }
+    @GetMapping("/get-test-result/{studySetId}")
+    public ResponseEntity<ApiResponse<List<TestResultResponse>>> getTestResults(@PathVariable Long studySetId, Principal principal) {
+        List<TestResult> results = studySetService.getTestResults(studySetId, principal.getName());
+        return ResponseEntity.ok(ApiResponse.<List<TestResultResponse>>builder()
+                .code(200)
+                .message("Lấy kết quả bài kiểm tra thành công")
+                .data(
+                        results.stream().map(result -> {
+                            TestResultResponse response = new TestResultResponse();
+                            response.setTestResultId(result.getTestResultId());
+                            response.setScore(result.getScore());
+                            response.setCorrectAnswers(result.getCorrectAnswers());
+                            response.setTotalQuestions(result.getTotalQuestions());
+                            response.setTestMode(result.getTestMode());
+                            response.setCompletionTime(result.getCompletionTime());
+                            response.setCreatedAt(result.getCreatedTestResultAt());
+                            response.setUser(result.getUser() != null ? new UserResponse(result.getUser().getUserId(), result.getUser().getUsername(), result.getUser().getEmail(),result.getUser().getFirstName(), result.getUser().getLastName(),result.getUser().getAvatarUrl(),result.getUser().getRole(),result.getUser().getCreatedUserAt()): null);
+                             response.setStudySet(studySetService.getStudySetById(studySetId));
+                             response.setDetails(result.getDetails() !=null ? result.getDetails().stream().map(e->
+                                     new TestResultDetailResponse( e.getUserAnswer(), new CardResultResponse(e.getCard().getCardId() , e.getCard().getTerm(), e.getCard().getDefinition()), e.isCorrect())
+                                     ).toList() : null);
+                            return response;
+                        }).toList()
+                )
+
+                .build());
+    }
 
     @PostMapping("/generate-description")
     public ResponseEntity<?> generateDescription(@RequestBody Map <String, String> body) {

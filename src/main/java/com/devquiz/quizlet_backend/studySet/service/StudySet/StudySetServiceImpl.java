@@ -11,15 +11,20 @@ import com.devquiz.quizlet_backend.learn.dto.response.QuizzDataReponse;
 import com.devquiz.quizlet_backend.learn.entity.LearningProcess;
 import com.devquiz.quizlet_backend.learn.repository.LearningProgressRepository;
 import com.devquiz.quizlet_backend.learn.types.LearningStatus;
+import com.devquiz.quizlet_backend.studySet.dto.request.AnswerDto;
 import com.devquiz.quizlet_backend.studySet.dto.request.SavedStudySetRequest;
 import com.devquiz.quizlet_backend.studySet.dto.request.StudySetRequest;
+import com.devquiz.quizlet_backend.studySet.dto.request.TestSubmissionDto;
 import com.devquiz.quizlet_backend.studySet.dto.response.StudySetResponse;
 import com.devquiz.quizlet_backend.studySet.dto.response.TestQuestionDto;
 import com.devquiz.quizlet_backend.studySet.dto.response.TestType;
 import com.devquiz.quizlet_backend.studySet.entity.SavedStudySet;
 import com.devquiz.quizlet_backend.studySet.entity.StudySet;
+import com.devquiz.quizlet_backend.studySet.entity.TestResult;
+import com.devquiz.quizlet_backend.studySet.entity.TestResultDetails;
 import com.devquiz.quizlet_backend.studySet.repository.SavedStudySetRepository;
 import com.devquiz.quizlet_backend.studySet.repository.StudySetRepository;
+import com.devquiz.quizlet_backend.studySet.repository.TestResultRepository;
 import com.devquiz.quizlet_backend.studySet.service.S3Service.S3Service;
 import com.devquiz.quizlet_backend.user.dto.response.ApiResponse;
 import com.devquiz.quizlet_backend.user.entity.User;
@@ -39,6 +44,7 @@ public class StudySetServiceImpl implements StudySetService {
     private final SavedStudySetRepository savedStudySetRepository;
     private final LearningProgressRepository learningProgressRepository;
     private final CardRepository cardRepository;
+    private final TestResultRepository testResultRepository;
     private final S3Service s3Service;
 
     private void validateRequest(StudySetRequest request) {
@@ -238,6 +244,7 @@ public class StudySetServiceImpl implements StudySetService {
 
     @Override
     public StudySetResponse createStudySet(StudySetRequest studySetRequest) {
+        System.out.println("Received StudySetRequest: " + studySetRequest);
         try {
             User currentUser = userRepository.findByEmail(studySetRequest.getUserEmail()).orElseThrow(
                     () -> new IllegalArgumentException("User not found")
@@ -425,6 +432,9 @@ public class StudySetServiceImpl implements StudySetService {
         }
         return testQuestions;
     }
+
+
+
     private String maskString(String input) {
         if (input == null || input.length() <= 2) {
             return input; // Không đủ dài để che
@@ -444,4 +454,66 @@ public class StudySetServiceImpl implements StudySetService {
         }
         return masked.toString();
     }
+
+
+    @Override
+    public TestResult submitTest(TestSubmissionDto testSubmissionDto, User user) {
+        StudySet studySet = studySetRepository.findById(testSubmissionDto.getStudySetId()).orElseThrow(
+                () -> new IllegalArgumentException("Study set not found")
+        );
+        TestResult testResult = new TestResult();
+        testResult.setUser(user);
+        testResult.setStudySet(studySet);
+        List<TestResultDetails> details = new ArrayList<>();
+        int correctCount = 0;
+        for (AnswerDto  ans : testSubmissionDto.getAnswers()){
+            Card card = cardRepository.findById(ans.getCardId()).orElseThrow(
+                    () -> new IllegalArgumentException("Card not found")
+            );
+            boolean isCorrect = false;
+            String realDef = card.getDefinition().trim().toLowerCase();
+            String userAnswer = ans.getUserAnswer().trim().toLowerCase();
+            if (ans.getDisplayedDef() != null && !ans.getDisplayedDef().isEmpty()) {
+                // 1. Kiểm tra xem định nghĩa hiển thị trên màn hình có thực sự khớp với DB không
+                boolean isMatchActual = realDef.equals(ans.getDisplayedDef().trim().toLowerCase());
+
+                // 2. Kiểm tra người dùng chọn "true" hay "false"
+                boolean userSelectedTrue = userAnswer.equals("true");
+
+                // 3. Đúng khi: (Thật sự khớp + chọn True) HOẶC (Thật sự không khớp + chọn False)
+                if (isMatchActual == userSelectedTrue) {
+                    isCorrect = true;
+                    correctCount++;
+                }
+            }
+            else{
+                isCorrect = true;
+                correctCount++;
+            }
+
+            TestResultDetails detail = new TestResultDetails();
+            detail.setTestResult(testResult);
+            detail.setCard(card);
+            detail.setUserAnswer(ans.getUserAnswer());
+            detail.setCorrect(isCorrect);
+            details.add(detail);
+        }
+        testResult.setTotalQuestions(testSubmissionDto.getTotalQuestions());
+        testResult.setCorrectAnswers(correctCount);
+        testResult.setScore((double) correctCount / testResult.getTotalQuestions() * 100);
+        testResult.setDetails(details); // Nhờ CascadeType.ALL, nó sẽ tự lưu Details khi lưu Result
+
+        return testResultRepository.save(testResult);    }
+
+    @Override
+    public List<TestResult> getTestResults(Long studySetId, String userEmail) {
+            User user = userRepository.findByEmail(userEmail).orElseThrow(
+                    () -> new IllegalArgumentException("User not found")
+            );
+                StudySet studySet = studySetRepository.findById(studySetId).orElseThrow(
+                        () -> new IllegalArgumentException("Study set not found")
+                );
+                return testResultRepository.findByStudySetIdAndUserEmail(studySet.getStudySetId(),user.getEmail());
+    }
+
 }
